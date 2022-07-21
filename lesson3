@@ -1,0 +1,71 @@
+from aiogram import Bot, types, Dispatcher, executor
+
+TOKEN = "5466660895:AAGdrcjJz9SbCXDQkLzgU9kPwQgrGF-9uyQ"
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=['start'])
+async def start(msg: types.Message):
+    keyboard = types.InlineKeyboardMarkup()
+    row_btns1 = {types.InlineKeyboardButton('Это один', callback_data='1')}
+    row_btns2 = {types.InlineKeyboardButton('Это два', callback_data='2')}
+    row_btns3 = {types.InlineKeyboardButton('Это три', callback_data='3')}
+    keyboard.row(*row_btns1)
+    keyboard.row(*row_btns2)
+    keyboard.row(*row_btns3)
+    await msg.answer("Уже работает", reply_markup=keyboard)
+
+
+@dp.callback_query_handler(lambda call: call.data == "1")
+async def about_func(callback: types.CallbackQuery):
+    await callback.answer()
+    await callback.message.answer('Наша фирма занимается *работой*', parse_mode="MarkdownV2")
+    
+
+@dp.callback_query_handler(lambda call: call.data == "2")
+async def about_func(callback: types.CallbackQuery):
+    await callback.answer()
+
+
+@dp.callback_query_handler(lambda call: call.data == "3")
+async def about_func(callback: types.CallbackQuery):
+    await callback.answer()
+
+
+# @dp.callback_query_handler()
+# async def test_callback(callback: types.CallbackQuery):
+#     await callback.answer()
+#     if callback.data == "1":
+#         await callback.message.answer('Ну это один')
+#     elif callback.data == "2":
+#         await callback.message.answer('Ну это два')
+#     elif callback.data == "3":
+#         await callback.message.answer('Ну это три')
+
+@dp.message_handler(commands=['help'])
+async def help(msg: types.Message):
+    await msg.answer("Это помощь")
+
+@dp.message_handler(lambda msg: msg.text == 'text')
+async def foo_funct(msg: types.Message):
+    await  msg.answer(msg.text)
+
+
+@dp.message_handler(lambda msg: msg.text == 'video')
+async def foo_funct(msg: types.Message):
+    # with open('test.mp4', 'rb') as f:
+    await msg.answer_video("BAACAgIAAxkDAAMMYtlv2djKlJ2_dmusEuwJb1N5rW8AAnEXAAJq1chKpkcxs4sJT5UpBA")
+
+
+executor.start_polling(dp, skip_updates=True)
+
+
+
+
+
+
+
+
+
+

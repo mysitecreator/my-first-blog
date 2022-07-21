@@ -1,0 +1,111 @@
+from aiogram import Bot, types
+from aiogram.dispatcher import Dispatcher
+from aiogram.utils import executor
+import logging
+import config
+import random
+from bs4 import BeautifulSoup as bs
+import requests
+
+# from newmanga import get_random_anime, get_link, get_img, get_name
+from newmanga import *
+
+logging.basicConfig(level=logging.INFO)
+
+
+bot = Bot(token=config.TOKEN)
+dp = Dispatcher(bot)
+
+
+# @dp.message_handler(commands=['subscribe'])
+# async def subscribe(message: types.Message):
+#     if (not db.subscriber_exists(message.from_user.id)):
+#         # если юзера нет в базе, добавляем его
+#         db.add_subscriber(message.from_user.id)
+#     else:
+#         # если он уже есть, то просто обновляем ему статус подписки
+#         db.update_subscription(message.from_user.id, True)
+#
+#     await message.answer(
+#         "Вы успешно подписались на рассылку!\nЖдите, скоро выйдут новые обзоры и вы узнаете о них первыми =)")
+#
+#
+# # Команда отписки
+# @dp.message_handler(commands=['unsubscribe'])
+# async def unsubscribe(message: types.Message):
+#     if (not db.subscriber_exists(message.from_user.id)):
+#         # если юзера нет в базе, добавляем его с неактивной подпиской (запоминаем)
+#         db.add_subscriber(message.from_user.id, False)
+#         await message.answer("Вы итак не подписаны.")
+#     else:
+#         # если он уже есть, то просто обновляем ему статус подписки
+#         db.update_subscription(message.from_user.id, False)
+#         await message.answer("Вы успешно отписаны от рассылки.")
+
+
+@dp.message_handler(commands=['start'])
+async def process_start_command(message: types.Message):
+
+    test = await get_random_anime()
+    print(test)
+    await bot.send_photo(message.from_user.id, types.InputFile.from_url(test['image']))
+    await message.answer(f"Название яой: '{test['title']}'\nСсылка: {test['link']}")
+    # await message.answer(test)
+
+
+# @dp.message_handler(commands=['help'])
+# async def process_help_command(message: types.Message):
+# #     await message.reply("Напиши мне что-нибудь, и я отпрпавлю этот текст тебе в ответ!")
+# #
+# # @dp.message_handler()
+# # async def echo_message(msg: types.Message):
+#     await bot.send_message(msg.from_user.id, msg.text)
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
+
+
+import requests
+from bs4 import BeautifulSoup as bs
+from urllib.parse import urlparse
+import random
+
+
+async def get_random_anime():
+
+    base_url = 'http://yaoilib.me'
+    url = 'https://yaoilib.me/manga-list?types[]=1'
+    r = requests.get(url)
+
+    soup = bs(r.content, features='html.parser')
+
+    anime = soup.find_all('a', class_='media-card')
+    manga_list = []
+
+    for mangas in anime:
+        manga = {}
+        # print(f"{title} | {link}")
+        manga['image'] = base_url + mangas["data-src"]
+        manga['title'] = mangas.find("h3", class_="media-card__title").text.strip()
+        manga['link'] = mangas['href']
+
+        manga_list.append(manga)
+
+    send_manga = random.choice(manga_list)
+    return send_manga
+
+
+    # for send in send_manga:
+    #     global get_img
+    #     get_img = send['image']
+    #     global get_name
+    #     get_name = send['title']
+    #     global get_link
+    #     get_link = send['link']
+
+
+get_link = ''
+get_img = ''
+get_name = ''
+
